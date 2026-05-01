@@ -1215,6 +1215,16 @@ def v2v_cmd(params, auto_clean=True, cmd_only=False, interaction=False, shell=Fa
     password = params.get("password")
     vm_name = params.get("main_vm")
     input_mode = params.get("input_mode")
+
+    # Allow skipping tests by embedding -SKIP in the VM or input file name
+    _skip_name = vm_name or ""
+    if input_mode in ("ova", "disk", "libvirtxml"):
+        _skip_name = params.get("input_file", _skip_name)
+    if "-SKIP" in _skip_name:
+        raise exceptions.TestSkipError(
+            "Skipping: '%s' contains -SKIP" % _skip_name
+        )
+
     cmd_has_ip = params.get("cmd_has_ip", True)
     # A switch controls a virsh pre-connection to source hypervisor,
     # but some testing environments(like, gating in OSP) don't have
